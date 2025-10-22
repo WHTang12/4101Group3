@@ -1,0 +1,71 @@
+---
+title: "Policy Implementation Data Cleaning"
+author: "DSE Group 3"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Importing relevant packages**
+```{r, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+```
+
+**Importing Policy Dataset**
+```{r Importing Policy Dataset}
+rawPolicyData <- read_csv("../data/search-results.csv", show_col_types = FALSE)
+head(rawPolicyData) 
+```
+
+
+```{r}
+clean <- rawPolicyData %>%
+  mutate(
+    Policy_Date_End = if_else(Policy_Date_End == "Ongoing", "2011-12-31", Policy_Date_End),
+    FamCapDate = na_if(FamCapDate, "n.a."),
+    Policy_Date_Begin = ymd(Policy_Date_Begin, quiet = TRUE),
+    Policy_Date_End   = ymd(Policy_Date_End, quiet = TRUE),
+    FamCapDate        = mdy(FamCapDate, quiet = TRUE)
+  )
+
+state_policy <- clean %>%
+  group_by(State) %>%
+  summarise(
+    ever_treated     = as.integer(any(FamCapExist == "Yes")),
+    treat_start_year = suppressWarnings(
+      min(coalesce(year(FamCapDate), year(Policy_Date_Begin))[FamCapExist == "Yes"], na.rm = TRUE)
+    ),
+    repeal_year = suppressWarnings(
+      max(year(Policy_Date_End)[FamCapExist == "Yes"], na.rm = TRUE)
+    ),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    treat_start_year = if_else(is.infinite(treat_start_year), NA_real_, treat_start_year),
+    repeal_year      = if_else(is.infinite(repeal_year), NA_real_, repeal_year)
+  )
+
+table(state_policy$ever_treated)
+```
+```{r}
+t_min <- 1982; t_max <- 2011
+
+state_year <- expand_grid(State = unique(state_policy$State),
+                          year = t_min:t_max) %>%
+  left_join(state_policy, by = "State") %>%
+  mutate(
+    treated = if_else(!is.na(treat_start_year) & year >= treat_start_year, 1L, 0L),
+    treated = if_else(!is.na(repeal_year) & year > repeal_year, 0L, treated)
+  )
+
+state_year
+```
+**Save cleaned data**
+```{r}
+#saveRDS(state_year, "../cleaned_data/policyImplementation.rds")
+```
+

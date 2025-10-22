@@ -1,0 +1,51 @@
+---
+title: "Callaway Santanna Group-time ATT"
+author: "DSE Group 3"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Importing relevant packages**
+```{r, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+library(did)
+```
+
+**Importing all cleaned data**
+```{r}
+df <- readRDS("../cleaned_data/finalmerged.rds")
+```
+
+**Remove all observations where year > repeal date**
+```{r}
+df1 <- df %>%
+  filter(is.na(repeal_year) | YEAR <= repeal_year)
+```
+
+```{r}
+att_cs <- att_gt(
+  yname   = "birth_lastyear",
+  tname   = "YEAR",
+  idname  = "CPSIDP",
+  gname   = "treat_start_year",
+  xformla = ~ AGE + NCHILD,
+  control_group = "notyettreated",
+  weightsname = "ASECWT",
+  data    = df1,
+  panel = F
+)
+```
+```{r}
+agg_cs <- aggte(att_cs, type = "dynamic")
+summary(agg_cs)
+```
+```{r}
+ggdid(agg_cs)
+```
+
+

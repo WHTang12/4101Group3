@@ -1,0 +1,96 @@
+---
+title: "State Controls Data Cleaning"
+author: "DSE Group 3"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Importing relevant packages**
+```{r, echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lubridate)
+library(readxl)
+library(Hmisc) # this one is for computing weighted median wages
+```
+
+#### **Unemployment rate**
+**Importing Unemployment (NOT SEASONALLY ADJUSTED) Dataset**
+```{r Importing Unemployment Dataset}
+rawEmploymentData <- read_excel("../data/ststdnsadata.xlsx",
+                                range = "A9:K31596",
+                                col_names = c("STATEFIP", "STATE", "YEAR", "MONTH", "CNIP", "LABORFORCE", "PCT", "EMPLOYED", "EMPLOYMENTRATE", "UNEMPLOYED", "UNEMPLOYMENTRATE")
+)
+
+head(rawEmploymentData)
+```
+
+**Keeping only state-level observations**
+```{r}
+n_distinct(rawEmploymentData$STATEFIP)
+```
+```{r}
+unique(rawEmploymentData$STATEFIP)
+```
+```{r}
+employmentData1 <- rawEmploymentData %>%
+  filter(!STATEFIP %in% c("037", "51000"))
+
+n_distinct(employmentData1$STATEFIP)
+```
+
+**Aggregating to annual unemployment rates**
+```{r}
+annualEmploymentData <- employmentData1 %>%
+  group_by(STATEFIP, STATE, YEAR) %>%
+  summarise(
+    UNEMPLOYMENTRATE = mean(UNEMPLOYMENTRATE, na.rm = TRUE),
+  ) %>%
+  ungroup()
+
+head(annualEmploymentData)
+```
+```{r}
+colSums(is.na(annualEmploymentData))
+```
+
+#### **Median Female Wage**
+**Importing CPS Female Wage Dataset**
+```{r Importing CPS Female Wage Dataset}
+rawFemaleWage <- read_csv("../data/cps_00006.csv", show_col_types = FALSE)
+
+head(rawFemaleWage)
+```
+
+```{r}
+colSums(is.na(rawFemaleWage))
+```
+**Filter only for working women, avoiding case where number of hours worked = 0, but wage not 0 etc**
+```{r}
+rawFemaleWage1 <- rawFemaleWage %>%
+  filter(WKSWORK1 > 0, INCWAGE > 0)
+
+head(rawFemaleWage1)
+```
+**Compute median wage for each state-year, weighted by ASECWT**
+```{r}
+medianWage <- rawFemaleWage1 %>%
+  mutate(weekly_wage = INCWAGE / WKSWORK1) %>%
+  group_by(STATEFIP, YEAR) %>%
+  summarise(
+    median_weekly_wage = wtd.quantile(weekly_wage, weights = ASECWT, probs = 0.5, na.rm = T)
+  )
+
+head(medianWage)
+```
+**Save cleaned data**
+```{r Saving as RDS}
+#saveRDS(annualEmploymentData, "../cleaned_data/annualEmployment.rds")
+#saveRDS(medianWage, "../cleaned_data/medianWage.rds")
+```
+
+
+
