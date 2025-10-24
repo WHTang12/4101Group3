@@ -28,24 +28,64 @@ df1 <- df %>%
 ```
 
 ```{r}
+colnames(df1)
+```
+
+
+```{r}
+df1$treat_start_year[is.na(df1$treat_start_year)] <- 0
+```
+
+
+```{r}
 att_cs <- att_gt(
   yname   = "birth_lastyear",
   tname   = "YEAR",
-  idname  = "CPSIDP",
   gname   = "treat_start_year",
-  xformla = ~ AGE + NCHILD,
-  control_group = "notyettreated",
+  xformla = ~ AGE + NCHILD + EDUC + RACE + MARST,
+  control_group = "nevertreated",
   weightsname = "ASECWT",
   data    = df1,
-  panel = F
+  panel = F,
+  clustervars = "STATEFIP"
 )
 ```
 ```{r}
-agg_cs <- aggte(att_cs, type = "dynamic")
+summary(att_cs)
+```
+
+```{r}
+agg_cs <- aggte(att_cs, type = "group")
 summary(agg_cs)
 ```
 ```{r}
-ggdid(agg_cs)
+agg_dyn <- aggte(att_cs, type = "dynamic")
+summary(agg_dyn)
+ggdid(agg_dyn)
 ```
+```{r}
+library(fixest)   
+
+# 2) EVENT-STUDY (Sun–Abraham), binary outcome → LPM
+#    Keep INDIVIDUAL covariates; cluster at state; add state & year FE
+m_birth <- feols(
+  birth_lastyear ~ sunab(treat_start_year, YEAR) + AGE + EDUC + RACE + MARST |
+    STATEFIP + YEAR,
+  data = df1,
+  weights = ~ASECWT,           # drop this line if you don't want weights
+  cluster = ~STATEFIP
+)
+
+summary(m_birth)
+etable(m_birth, se = "cluster")
+post <- coef(m_birth)[grepl("event::", names(coef(m_birth))) & !grepl("event_\\-", names(coef(m_birth)))]
+mean(post)   # simple average of post coefficients
+```
+
+
+```{r}
+iplot(m_birth, ref.line = 0, xlab = "Event time (years)", main = "Births < 1 (SA event-study)")
+```
+
 
 
