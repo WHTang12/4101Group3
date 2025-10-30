@@ -77,7 +77,14 @@ anti_join(policyImplementation, mergedData2, by=c("STATE","YEAR")) %>% distinct(
 mergedData3 <- mergedData2 %>%
   left_join(policyImplementation, by = c("STATE", "YEAR"))
 
-head(mergedData3)
+# For convenience, arrange the columns
+mergedData4 <- mergedData3 %>% 
+  select(YEAR, STATEFIP, STATE, ASECWT, ever_treated, treat_start_year, treated, 
+         UNEMPLOYMENTRATE, lag_unemployment_rate, median_weekly_wage, lag_weekly_median_wage, 
+         everything())
+
+head(mergedData4)
+colSums(is.na(mergedData4))
 
 # Save as RDS
-#saveRDS(mergedData3, "../cleaned_data/finalmerged.rds")
+saveRDS(mergedData4, "../cleaned_data/finalmerged.rds")

@@ -25,10 +25,16 @@ n_distinct(employmentData1$STATEFIP)
 
 # Aggregate monthly unemployment rates into annual
 annualEmploymentData <- employmentData1 %>%
-  group_by(STATEFIP, STATE, YEAR) %>%
+  group_by(STATE, STATEFIP, YEAR) %>%
   summarise(
     UNEMPLOYMENTRATE = mean(UNEMPLOYMENTRATE, na.rm = TRUE),
   ) %>%
+  ungroup()
+
+# Get lag unemployment rates
+annualEmploymentData <- annualEmploymentData %>%
+  group_by(STATE) %>%
+  mutate(lag_unemployment_rate = lag(UNEMPLOYMENTRATE)) %>%
   ungroup()
 
 head(annualEmploymentData)
@@ -54,7 +60,15 @@ medianWage <- rawFemaleWage1 %>%
     median_weekly_wage = wtd.quantile(weekly_wage, weights = ASECWT, probs = 0.5, na.rm = T)
   )
 
+# Get lag weekly median wage
+medianWage <- medianWage %>%
+  group_by(STATEFIP) %>%
+  mutate(lag_weekly_median_wage = lag(median_weekly_wage)) %>%
+  ungroup()
+
 head(medianWage)
+
+
 
 # Save data
 #saveRDS(annualEmploymentData, "../cleaned_data/annualEmployment.rds")
