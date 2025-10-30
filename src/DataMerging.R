@@ -87,4 +87,4 @@ head(mergedData4)
 colSums(is.na(mergedData4))
 
 # Save as RDS
-saveRDS(mergedData4, "../cleaned_data/finalmerged.rds")
+#saveRDS(mergedData4, "../cleaned_data/finalmerged.rds")

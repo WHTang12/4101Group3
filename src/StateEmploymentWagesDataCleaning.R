@@ -43,7 +43,7 @@ colSums(is.na(annualEmploymentData))
 ##### Female Median Weekly Wages #####
 
 # Import data
-rawFemaleWage <- read_csv("../data/cps_00006.csv", show_col_types = FALSE)
+rawFemaleWage <- read_csv("../data/cps_00007.csv", show_col_types = FALSE)
 
 head(rawFemaleWage)
 colSums(is.na(rawFemaleWage))

@@ -9,20 +9,20 @@ df <- readRDS("../cleaned_data/finalmerged.rds")
 # Remove all observations where year > repeal year
 df1 <- df %>%
   filter(is.na(repeal_year) | YEAR <= repeal_year) %>%
-  filter(ASECWT != 0) %>%
-  mutate(RACE = factor(RACE))
+  filter(ASECWT != 0)
 
 colnames(df1)
 
 # For never-treated units, we set treat_start_year to be 0, to be consistent with how the package wants it
 df1$treat_start_year[is.na(df1$treat_start_year)] <- 0
 
+##### Main model (Using never-treated as control group) #####
 # Group-time ATT for never-treated
 att_cs_NT <- att_gt(
   yname   = "birth_lastyear",
   tname   = "YEAR",
   gname   = "treat_start_year",
-  xformla = ~ AGE + NCHILD + EDUC + MARST + ELDCH + UNEMPLOYMENTRATE + median_weekly_wage,
+  xformla = ~ AGE + NCHILD + EDUC + MARST + ELDCH + black + white + lag_UNEMPLOYMENTRATE + median_weekly_wage,
   control_group = "nevertreated",
   weightsname = "ASECWT",
   data = df1,
@@ -39,7 +39,8 @@ summary(agg_dyn_NT)
 
 ggdid(agg_dyn_NT)
 
-# Group-time ATT for never-treated
+##### Secondary model (Using not-yet-treated as control group) #####
+# Group-time ATT for not-yet-treated
 att_cs_NYT <- att_gt(
   yname   = "birth_lastyear",
   tname   = "YEAR",
