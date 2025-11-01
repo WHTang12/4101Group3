@@ -139,33 +139,33 @@ ggplot(anticipationResults, aes(event_time, att, color = anticipation, group = a
        title = "Event-study ATTs across anticipation windows") +
   theme_minimal(base_size = 12)
 
-##### Placebo test #####
-# Since ATT at t = -5 is not significantly close to 0, we run a placebo test by creating a fake treatment indicator at t = -7
+##### According to pre-trends diagnostics, we see that there is a considerable change in pre-trends for the 1997 group
+# Therefore, we consider getting rid of 1997 group and see how the results differ
 
-# Create a fake treatment start year 7 years prior. Control group remains 0
-df_placebo <- df1 %>%
-  mutate(fake_treat_start_year = pmax(0, treat_start_year - 7)) %>% 
-  filter(YEAR < treat_start_year | treat_start_year == 0)
+dfwithout1997 <- df1 %>%
+  filter(treat_start_year != 1997)
 
-placebo_NT <- att_gt(
+att_cs_NT_without1997 <- att_gt(
   yname   = "birth_lastyear",
   tname   = "YEAR",
-  gname   = "fake_treat_start_year",
+  gname   = "treat_start_year",
   xformla = ~ AGE + NCHILD + EDUC + MARST + ELDCH + black + white + lag_unemployment_rate + lag_weekly_median_wage,
-  control_group = "notyettreated",
+  control_group = "nevertreated",
   weightsname = "ASECWT",
-  data = df_placebo,
+  data = dfwithout1997,
   panel = F, # we are using repeated cross-sectional data
   anticipation = 0,
   clustervars = "STATEFIP",
   est_method = "reg"
 )
 
-summary(placebo_NT)
+att_cs_NT_without1997 <- readRDS("../modelresults/cs/att_cs_NT_without1997.rds") # instead of re-running, load this
+summary(att_cs_NT_without1997)
 
-placebo_dyn_NT <- aggte(placebo_NT, type = "dynamic")
-summary(placebo_dyn_NT)
-ggdid(placebo_dyn_NT)
+agg_dyn_NT_without1997 <- aggte(att_cs_NT_without1997, type = "dynamic")
+agg_dyn_NT_without1997 <- readRDS("../modelresults/cs/agg_dyn_NT_without1997.rds") # instead of re-running, load this
+summary(agg_dyn_NT_without1997)
+ggdid(agg_dyn_NT_without1997)
 
 
 ##### Employment #####
