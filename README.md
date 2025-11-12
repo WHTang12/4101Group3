@@ -5,6 +5,24 @@ This repository contains the code and data used to estimate the causal effects o
 
 The analysis compares three modern DiD estimators, C&S (2021), S&A (2021) and BJS (2024)
 
+# Structure
+├── cleaned_data/ # Processed datasets after cleaning and merging
+├── data/ # Raw data inputs (CPS, BLS, Welfare Rules)
+├── modelresults/ # Saved model outputs (RData objects for CS)
+├── plots/ # Generated figures
+├── src/ # R Scripts
+│ ├── CPSIndivDataCleaning.R
+│ ├── PolicyDataCleaning.R
+│ ├── StateEmploymentWagesDataCleaning.R
+│ ├── DataMerging.R
+│ ├── GTATT.R # Callaway & Sant’Anna Group-time estimator
+│ ├── interaction-weighted.R # Sun & Abraham estimator
+│ ├── TWFE.R # Simple TWFE
+│ ├── SimplePretrendsPlot.R # Visualization of pre-trends (for presentation only)
+│ ├── FamCap_Timeline.R # Plotting policy adoption timeline
+│ ├── Final Imputation Code.R # Borusyak et al's Imputation estimator
+│ └── DSE4101 Project code.R 
+
 # Data
 
 The analysis uses a cleaned dataset saved as ```../cleaned_data/finalmerged.rds```, which contains state-year level records with treatment timing, demographic controls, and economic variables.
