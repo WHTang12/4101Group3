@@ -60,17 +60,4 @@ The analysis uses the interaction-weighted (IW) Difference-in-Differences estima
 
 ## 3. BJS Imputation-Based DiD Estimator
 
-The R script Final Imputation Code.R (located in the src folder) runs the imputation-based Difference-in-Differences estimator using ```did_imputation()```. Event-study and average treatment effects (ATTs) are estimated as follows:
-
-```imp_birth <- did_imputation(
-  data        = df_state,
-  yname       = "birth_lastyear",
-  gname       = "treat_start_year",
-  tname       = "YEAR",
-  idname      = "STATEFIP",
-  horizon     = TRUE,
-  pretrends   = TRUE,
-  cluster_var = "STATEFIP"
-)
-```
-Analogous models are run for employed. Event-study plots display dynamic treatment effects with 95% confidence intervals. Setting horizon = FALSE yields the average ATT.
+The R script Final Imputation Code.R (located in the src folder) runs the imputation-based Difference-in-Differences estimator using ```did_imputation()``` in the ```didimputation``` package. 
