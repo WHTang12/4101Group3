@@ -44,6 +44,12 @@ agg_simple_NT <- aggte(att_cs_NT, type = "simple")
 agg_simple_NT <- readRDS("../modelresults/cs/agg_simple_NT.rds")
 summary(agg_simple_NT)
 
+summary(aggte(att_cs_NT, type = "group"))
+
+#agg_group_NT <- aggte(att_cs_NT, type = "group")
+#ggdid(agg_group_NT)
+#summary(agg_group_NT)
+
 # Saving so we don't have to rerun it and wait everytime
 #saveRDS(att_cs_NT, "../modelresults/cs/att_cs_NT.rds")
 #saveRDS(agg_dyn_NT, "../modelresults/cs/agg_dyn_NT.rds")
@@ -112,6 +118,22 @@ model_k <- function(k) {
   )
 }
 
+att3 <- att_gt(
+  yname   = "birth_lastyear",
+  tname   = "YEAR",
+  gname   = "treat_start_year",
+  xformla = ~ AGE + NCHILD + EDUC + MARST + ELDCH + black + white + lag_unemployment_rate + lag_weekly_median_wage,
+  control_group = "nevertreated",
+  weightsname   = "ASECWT",
+  data          = df1,
+  panel         = FALSE,
+  anticipation  = 5,
+  clustervars   = "STATEFIP",
+  est_method    = "reg"
+)
+summary(aggte(att3, type = "simple"))
+
+
 # Run model with anticipation = 1 to 5
 k <- 1:5 
 res <- map_dfr(k, model_k)
@@ -167,6 +189,14 @@ agg_dyn_NT_without1997 <- readRDS("../modelresults/cs/agg_dyn_NT_without1997.rds
 summary(agg_dyn_NT_without1997)
 ggdid(agg_dyn_NT_without1997)
 
+agg_simple_NT_without1997 <- aggte(att_cs_NT_without1997, type = "simple")
+agg_simple_NT_without1997 <- readRDS("../modelresults/cs/agg_simple_NT_without1997.rds") # instead of re-running, load this
+summary(agg_simple_NT_without1997)
+
+# Saving so we don't have to rerun it and wait everytime
+#saveRDS(att_cs_NT_without1997, "../modelresults/cs/att_cs_NT_without1997.rds")
+#saveRDS(agg_dyn_NT_without1997, "../modelresults/cs/agg_dyn_NT_without1997.rds")
+#saveRDS(agg_simple_NT_without1997, "../modelresults/cs/agg_simple_NT_without1997.rds")
 
 ##### Employment #####
 ##### Main model (Using never-treated as control group) #####
@@ -185,11 +215,16 @@ att_cs_NT_employment <- att_gt(
   est_method = "reg"
 )
 
+att_cs_NT_employment <- readRDS("../modelresults/cs/att_cs_NT_employment.rds") # instead of re-running, load this
 summary(att_cs_NT_employment)
 
 agg_dyn_NT_employment <- aggte(att_cs_NT_employment, type = "dynamic")
+agg_dyn_NT_employment <- readRDS("../modelresults/cs/agg_dyn_NT_employment.rds") # instead of re-running, load this
 summary(agg_dyn_NT_employment)
 ggdid(agg_dyn_NT_employment)
+
+agg_simple_NT_employment <- aggte(att_cs_NT_employment, type = "simple")
+summary(agg_simple_NT_employment)
 
 # Saving so we don't have to rerun it and wait everytime
 #saveRDS(att_cs_NT_employment, "../modelresults/att_cs_NT_employment.rds")
@@ -211,14 +246,21 @@ att_cs_NYT_employment <- att_gt(
   est_method = "reg"
 )
 
+att_cs_NYT_employment <- readRDS("../modelresults/cs/att_cs_NYT_employment.rds") # instead of re-running, load this
 summary(att_cs_NYT_employment)
 
+
 agg_dyn_NYT_employment <- aggte(att_cs_NYT_employment, type = "dynamic")
+agg_dyn_NYT_employment <- readRDS("../modelresults/cs/agg_dyn_NYT_employment.rds")
 summary(agg_dyn_NYT_employment)
 ggdid(agg_dyn_NYT_employment)
 
+agg_simple_NYT_employment <- aggte(att_cs_NYT_employment, type = "simple")
+summary(agg_simple_NYT_employment)
+
 #saveRDS(att_cs_NYT_employment, "../modelresults/cs/att_cs_NYT_employment.rds")
 #saveRDS(agg_dyn_NYT_employment, "../modelresults/cs/agg_dyn_NYT_employment.rds")
+saveRDS(agg_simple_NYT_employment, "../modelresults/cs/agg_simple_NYT_employment.rds")
 
 ##### Testing sensitivity to different anticipatory behavior #####
 

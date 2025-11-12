@@ -63,4 +63,4 @@ CPS4 <- CPS3 %>%
 colSums(is.na(CPS4))
 
 # Save as RDS
-saveRDS(CPS4, "../cleaned_data/indivCPS.rds")
+#saveRDS(CPS4, "../cleaned_data/indivCPS.rds")
