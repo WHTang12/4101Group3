@@ -3,7 +3,7 @@
 
 This repository contains the code and data used to estimate the causal effects of the U.S. Family Cap policy on fertility and women’s employment.
 
-Due to file size limitations, two large datasets can instead be accessed via the following link: https://drive.google.com/drive/folders/1EKBY2LY3DOxGCBhVUuYKL9O_X4DkBY6w?usp=sharing
+The analysis compares three modern DiD estimators, C&S (2021), S&A (2021) and BJS (2024)
 
 # Data
 
