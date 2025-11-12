@@ -29,7 +29,11 @@ iw_sa_NT <- feols(
 
 ## summary of the results
 summary(iw_sa_NT)
-iplot(iw_sa_NT)
+
+## plot of the results
+iplot(iw_sa_NT, xlab = "Years Since Adoption (τ)", ylab = "ATT(τ)",
+      main = "Dynamic Effects on Fertility, Control = Not Treated", col = "steelblue")
+abline(h = 0, lty = 2, col = "grey40")
 
 ## aggregate dynamic ATT
 agg_dyn_NT <- aggregate(iw_sa_NT, agg = "ATT", type = "dynamic")
@@ -56,7 +60,11 @@ iw_sa_NYT <- feols(
 
 ## summary of the results
 summary(iw_sa_NYT)
-iplot(iw_sa_NYT)
+
+## plot of the results
+iplot(iw_sa_NYT, xlab = "Years Since Adoption (τ)", ylab = "ATT(τ)",
+      main = "Dynamic Effects on Fertility, Control = Not Yet Treated", col = "steelblue")
+abline(h = 0, lty = 2, col = "grey40")
 
 ## aggregate dynamic ATT
 agg_dyn_NYT <- aggregate(iw_sa_NYT, agg = "ATT", type = "dynamic")
@@ -69,8 +77,17 @@ summary(agg_simple_NYT)
 # testing sensitivity to anticipation
 ## defining the model
 iw <- feols(
-  employed ~ sunab(treat_start_year, YEAR) + AGE + NCHILD + EDUC + MARST + 
+  birth_lastyear ~ sunab(treat_start_year, YEAR) + AGE + NCHILD + EDUC + MARST + 
     ELDCH + black + white + lag_unemployment_rate + lag_weekly_median_wage | 
+    STATEFIP + YEAR,
+  data = df1,
+  weights = ~ASECWT,
+  cluster = ~STATEFIP
+)
+
+iw_sa_NT <- feols(
+  birth_lastyear ~ sunab(treat_start_year, YEAR) + AGE + NCHILD + EDUC + MARST + 
+    ELDCH + black + white + lag_unemployment_rate + lag_weekly_median_wage |
     STATEFIP + YEAR,
   data = df1,
   weights = ~ASECWT,
@@ -105,28 +122,10 @@ ggplot(anticipationResults_sa,
   geom_pointrange(color = "steelblue", size = 0.8) +
   labs(
     x = "Anticipation window (k years)",
-    y = "Average ATT (Sun & Abraham 2021)",
-    title = "Sensitivity of average ATT to anticipatory behavior"
+    y = "Average ATT",
+    title = "ATT sensitivity to anticipation (Fertility)"
   ) +
   theme_minimal(base_size = 13)
-
-# we see that ATT is stable across different anticipation windows.
-# this suggests that there is no anticipatory behavior.
-
-# testing parallel-trends assumption
-## plot the event-study
-iplot(iw, ref.line = -1,
-      xlab = "Event-time (years relative to treatment)",
-      ylab = "ATT(g,t)",
-      main = "Event-study: Fertility (Pre- and Post-treatment)")
-
-## aggregate dynamic ATT and summarise results
-agg_dyn <- aggregate(iw, agg="ATT", type="dynamic")
-summary(agg_dyn)
-
-# there is a sharp downward “dip” around event time -20.
-# not of concern because we are focusing on event window = [-10, +10].
-# within this window, parallel-trends assumption holds.
 
 # OUTCOME: EMPLOYMENT
 # main model: interaction-weighted model, control group = never-treated
@@ -142,17 +141,18 @@ iw_sa_NT_emp <- feols(
 
 ## summary of results
 summary(iw_sa_NT_emp)
-iplot(iw_sa_NT_emp,
-      xlab = "Event time (years relative to treatment)",
-      ylab = "ATT(g,t)",
-      main = "Event-study: Employment (Never-treated as control)")
+
+## plot of the results
+iplot(iw_sa_NT_emp, xlab = "Years Since Adoption (τ)", ylab = "ATT(τ)",
+      main = "Dynamic Effects on Employment, Control = Not Treated", col = "steelblue")
+abline(h = 0, lty = 2, col = "grey40")
 
 ## aggregate dynamic ATT
-agg_dyn_NT_emp <- aggregate(iw_sa_NT_emp, agg = "(YEAR)")
+agg_dyn_NT_emp <- aggregate(iw_sa_NT_emp, agg = "ATT", type="dynamic")
 summary(agg_dyn_NT_emp)
 
 ## aggregate simple ATT
-agg_simple_NT_emp <- aggregate(iw_sa_NT_emp, agg = "(Intercept)")
+agg_simple_NT_emp <- aggregate(iw_sa_NT_emp, agg = "ATT", type="simple")
 summary(agg_simple_NT_emp)
 
 # secondary model: interaction-weighted model, control group = not yet-treated
@@ -172,10 +172,11 @@ iw_sa_NYT_emp <- feols(
 
 ## summary of results
 summary(iw_sa_NYT_emp)
-iplot(iw_sa_NYT_emp,
-      xlab = "Event time (years relative to treatment)",
-      ylab = "ATT(g,t)",
-      main = "Event-study: Employment (Not-yet-treated as control)")
+
+## plot the results
+iplot(iw_sa_NYT_emp, xlab = "Years Since Adoption (τ)", ylab = "ATT(τ)",
+      main = "Dynamic Effects on Employment, Control = Not Yet Treated", col = "steelblue")
+abline(h = 0, lty = 2, col = "grey40")
 
 ## aggregate dynamic ATT
 agg_dyn_NYT_emp <- aggregate(iw_sa_NYT_emp, agg = "ATT", type = "dynamic")
@@ -223,23 +224,7 @@ ggplot(anticipationResults_emp,
   geom_pointrange(color = "steelblue", size = 0.8) +
   labs(
     x = "Anticipation window (k years)",
-    y = "Average ATT (Sun & Abraham 2021)",
-    title = "Sensitivity of Employment ATT to Anticipatory Behavior"
+    y = "Average ATT",
+    title = "ATT sensitivity to anticipation (employment)"
   ) +
   theme_minimal(base_size = 13)
-
-
-# testing parallel-trends assumption
-## plot the event-study
-iplot(iw_emp, ref.line = -1,
-      xlab = "Event-time (years relative to treatment)",
-      ylab = "ATT(g,t)",
-      main = "Event-study: Employment (Pre- and Post-treatment)")
-
-## aggregate dynamic ATT and summarise results
-agg_dyn_emp <- aggregate(iw_emp, agg = "(YEAR)")
-summary(agg_dyn_emp)
-
-# there is a sharp downward “dip” around event time -20.
-# not of concern because we are focusing on event window = [-10, +10].
-# within this window, parallel-trends assumption holds.
