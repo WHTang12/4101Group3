@@ -142,6 +142,7 @@ res <- map_dfr(k, model_k)
 
 res <- readRDS("../modelresults/cs/anticipation.rds") # instead of re-running, load this
 
+### --- Plot event time of all 5 anticipation windows --- ###
 anticipationResults <- res %>%
   mutate(
     upperbound = att + 1.96 * se,
@@ -161,6 +162,58 @@ ggplot(anticipationResults, aes(event_time, att, color = anticipation, group = a
        title = "Event-study ATTs across anticipation windows") +
   theme_minimal(base_size = 12)
 
+### --- Plot simple estimate of all 5 anticipation windows (TAKES LONG!!!) --- ###
+run_cs_birth <- function(k) {
+  att_obj <- att_gt(
+    yname   = "birth_lastyear",
+    tname   = "YEAR",
+    gname   = "treat_start_year",
+    xformla = ~ AGE + NCHILD + EDUC + MARST + ELDCH + black + white +
+      lag_unemployment_rate + lag_weekly_median_wage,
+    control_group = "nevertreated",
+    weightsname   = "ASECWT",
+    data          = df1,
+    panel         = FALSE,
+    anticipation  = k,
+    clustervars   = "STATEFIP",
+    est_method    = "reg"
+  )
+  
+  # Aggregate ATT (simple)
+  ag <- aggte(att_obj, type = "simple")
+  tibble(
+    anticipation = k,
+    att = ag$overall.att,
+    se  = ag$overall.se
+  )
+}
+
+# Run for anticipation = 0-5
+res_cs_birth <- map_dfr(0:5, run_cs_birth)
+
+# Compute confidence intervals
+anticipationResults_birth <- res_cs_birth %>%
+  mutate(
+    upper = att + 1.96 * se,
+    lower = att - 1.96 * se
+  )
+
+# Plot
+anticipationSimplePlot <- ggplot(anticipationResults_birth,
+       aes(x = anticipation, y = att, ymin = lower, ymax = upper)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_pointrange(color = "steelblue", size = 0.8) +
+  labs(
+    x = "Anticipation window (k years)",
+    y = NULL,
+  ) +
+  theme_minimal(base_size = 13)
+
+ggsave(
+  filename = "../plots/anticipationSimple_cs.png",  
+  plot = anticipationSimplePlot,
+  width = 7, height = 4, units = "in", dpi = 600
+)
 ##### According to pre-trends diagnostics, we see that there is a considerable change in pre-trends for the 1997 group
 # Therefore, we consider getting rid of 1997 group and see how the results differ
 
@@ -251,16 +304,17 @@ summary(att_cs_NYT_employment)
 
 
 agg_dyn_NYT_employment <- aggte(att_cs_NYT_employment, type = "dynamic")
-agg_dyn_NYT_employment <- readRDS("../modelresults/cs/agg_dyn_NYT_employment.rds")
+agg_dyn_NYT_employment <- readRDS("../modelresults/cs/agg_dyn_NYT_employment.rds") # instead of re-running, load this
 summary(agg_dyn_NYT_employment)
 ggdid(agg_dyn_NYT_employment)
 
 agg_simple_NYT_employment <- aggte(att_cs_NYT_employment, type = "simple")
+agg_simple_NYT_employment <- readRDS("../modelresults/cs/agg_simple_NYT_employment.rds") # instead of re-running, load this
 summary(agg_simple_NYT_employment)
 
 #saveRDS(att_cs_NYT_employment, "../modelresults/cs/att_cs_NYT_employment.rds")
 #saveRDS(agg_dyn_NYT_employment, "../modelresults/cs/agg_dyn_NYT_employment.rds")
-saveRDS(agg_simple_NYT_employment, "../modelresults/cs/agg_simple_NYT_employment.rds")
+#saveRDS(agg_simple_NYT_employment, "../modelresults/cs/agg_simple_NYT_employment.rds")
 
 ##### Testing sensitivity to different anticipatory behavior #####
 
@@ -317,3 +371,57 @@ ggplot(anticipationResults_employment, aes(event_time, att, color = anticipation
        fill  = "Anticipation (k)",
        title = "Event-study ATTs across anticipation windows") +
   theme_minimal(base_size = 12)
+
+### --- Plot simple estimate of all 5 anticipation windows (TAKES LONG!!!) --- ###
+run_cs_emp <- function(k) {
+  att_obj <- att_gt(
+    yname   = "employed",  
+    tname   = "YEAR",
+    gname   = "treat_start_year",
+    xformla = ~ AGE + NCHILD + EDUC + MARST + ELDCH + black + white +
+      lag_unemployment_rate + lag_weekly_median_wage,
+    control_group = "nevertreated",
+    weightsname   = "ASECWT",
+    data          = df1,
+    panel         = FALSE,
+    anticipation  = k,
+    clustervars   = "STATEFIP",
+    est_method    = "reg"
+  )
+  
+  # Aggregate ATT (simple)
+  ag <- aggte(att_obj, type = "simple")
+  tibble(
+    anticipation = k,
+    att = ag$overall.att,
+    se  = ag$overall.se
+  )
+}
+
+# Run for anticipation = 0-5
+res_cs_emp <- map_dfr(0:5, run_cs_emp)
+
+# Compute 95% CIs
+anticipationResults_emp <- res_cs_emp %>%
+  mutate(
+    upper = att + 1.96 * se,
+    lower = att - 1.96 * se
+  )
+
+# Plot
+anticipationSimplePlot_emp <- ggplot(anticipationResults_emp,
+                                     aes(x = anticipation, y = att, ymin = lower, ymax = upper)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_pointrange(color = "steelblue", size = 0.8) +
+  labs(
+    x = "Anticipation window (k years)",
+    y = NULL
+  ) +
+  theme_minimal(base_size = 13)
+
+# Save 
+# ggsave(
+#   filename = "../plots/anticipationSimple_cs_emp.png",
+#   plot = anticipationSimplePlot_emp,
+#   width = 7, height = 4, units = "in", dpi = 600
+# )
