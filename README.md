@@ -58,7 +58,7 @@ The R script GTATT.R contains the full analysis for the group-time ATT estimator
 
 The analysis uses the interaction-weighted (IW) Difference-in-Differences estimator developed by Sun & Abraham (2021), implemented via the ```sunab()``` function in the ```fixest``` package. 
 
-## 3. Imputation-Based DiD Estimator
+## 3. BJS Imputation-Based DiD Estimator
 
 The R script Final Imputation Code.R (located in the src folder) runs the imputation-based Difference-in-Differences estimator using ```did_imputation()```. Event-study and average treatment effects (ATTs) are estimated as follows:
 
