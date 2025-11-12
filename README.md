@@ -54,7 +54,11 @@ For the imputation and weighting estimators, data is aggregated to the state-yea
 
 The R script GTATT.R contains the full analysis for the group-time ATT estimator. Due to computational intensity, model outputs are saved in the modelresults folder and loaded as needed to ensure efficient and reproducible analysis.
 
-## 2. Imputation-Based DiD Estimator
+## 2. Sun and Abraham’s Interaction-Weighted Estimator
+
+The analysis uses the interaction-weighted (IW) Difference-in-Differences estimator developed by Sun & Abraham (2021), implemented via the ```sunab()``` function in the ```fixest``` package. 
+
+## 3. Imputation-Based DiD Estimator
 
 The R script Final Imputation Code.R (located in the src folder) runs the imputation-based Difference-in-Differences estimator using ```did_imputation()```. Event-study and average treatment effects (ATTs) are estimated as follows:
 
