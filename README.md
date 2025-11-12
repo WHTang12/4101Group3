@@ -5,7 +5,7 @@ This repository contains the code and data used to estimate the causal effects o
 
 The analysis compares three modern DiD estimators, C&S (2021), S&A (2021) and BJS (2024)
 
-Code to required dataset: https://drive.google.com/drive/folders/1EKBY2LY3DOxGCBhVUuYKL9O_X4DkBY6w?usp=sharing
+Code to required dataset (put in /data folder): https://drive.google.com/drive/folders/1EKBY2LY3DOxGCBhVUuYKL9O_X4DkBY6w?usp=sharing
 
 # Structure
 ```
